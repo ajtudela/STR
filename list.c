@@ -7,21 +7,26 @@
 #define TRUE 1
 #define FALSE 0
 
-#define MAX_TEXT 33 /* 32 caracteres + '\0' */
+#define MAX_DIGITS 5 /* 5 dígitos */
+#define MAX_LEN 32 /* 32 caracteres */
 #define MAX_SAMPLE 100 /* Numero máximo de elementos (jitter) */
 
+#define MAX_TEXT MAX_LEN + 1 /* MAX_LEN + '\0' (relativo) */
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x) /* Ref: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string */
+
 typedef struct component {
-    unsigned int id; /* Código de componente (< 100000, cinco dígitos) */
+    unsigned int id; /* Código de componente (cinco dígitos) */
     char * manufacturer; /* Puntero a texto Fabricante --crear con malloc (tamaño MAX_TEXT) */
     float price; /* Precio */
     unsigned int n; /* Disponibilidad */
 } Componente;
-//typedef unsigned int Componente;
 
 typedef struct node * Lista;
 typedef struct node {
-    Componente * data;
-    Lista next;
+    Componente * data; /* Puntero a Componente */
+    Lista next; /* Puntero al siguiente Nodo */
 } Nodo;
 
 Lista Lista_Crear(void);
@@ -32,19 +37,17 @@ Componente* Lista_Valor(const Lista *lista, unsigned pos);
 
 void Lista_Extraer(Lista *lista);
 
-/* Crear un array dinámico de punteros para hacer free (realloc del array si es necesario) */
-//Es necesario hacer free a cada Nodo.data (no hace falta guardarlo en el array de free, se hace sobre la marcha)
 void Lista_Vaciar(Lista *lista);
 
-double mean(double *sample, unsigned int length);
+double mean(double *sample, unsigned int length); /* Media aritmética, llamada por la función std (desviación típica) */
 
-double std(double *sample, unsigned int length);
+double std(double *sample, unsigned int length); /* desviación típica */
 
-int show_menu(void);
+int show_menu(void); /* mostrar menú (User Interface) */
 
-void clear(void);
+void clear(void); /* vacía el buffer stdin (final del buffer marcado por '\n') */
 
-void pause(void);
+void pause(void); /* muestra un mensaje pidiendo permiso antes de continuar (antes de system("clear")) */
 
 //TODO: handle malloc errors?
 int main(int argc, char** argv)
@@ -57,11 +60,7 @@ int main(int argc, char** argv)
     double sample[MAX_SAMPLE];
     clock_t start, end;
 
-    char format[MAX_TEXT];
     char buffer[MAX_TEXT];
-
-    /* Ref: http://stackoverflow.com/questions/1621394/how-to-prevent-scanf-causing-a-buffer-overflow-in-c */
-    snprintf(format, MAX_TEXT - 1, "%%%ds", MAX_TEXT - 1); /* eq. "%32s" (with MAX_TEXT == 33) */
     componente.manufacturer = buffer;
 
     int exit = FALSE;
@@ -73,13 +72,12 @@ int main(int argc, char** argv)
         switch (opt)
         {
         case 1:
-            //TODO: comprobación 5 dígitos (< 100000)
             printf("Código: ");
-            scanf("%u", &componente.id);
+            scanf("%" TOSTRING(MAX_DIGITS) "u", &componente.id); /* MAX_DIGITS dígitos */
             clear();
 
             printf("Fabricante: ");
-            scanf(format, buffer);
+            scanf("%" TOSTRING(MAX_LEN) "s", buffer); /* MAX_TEXT - 1 caracteres (dinámico) */
             clear();
 
             printf("Precio: ");
@@ -124,7 +122,7 @@ int main(int argc, char** argv)
             break;
 
         case 5:
-            /* Crear nuevo componente */
+            /* Crear nuevo componente (por defecto) */
             componente.id = 99999;
             componente.manufacturer = "default";
             componente.price = 0.f;
@@ -136,7 +134,7 @@ int main(int argc, char** argv)
                 Lista_Agregar(&list, &componente);
                 end = clock();
 
-                sample[n] = ((double) (end - start)) / CLOCKS_PER_SEC * 1000.;
+                sample[n] = ((double) (end - start)) / CLOCKS_PER_SEC * 1000.; /* milisegundos */
             }
 
             printf("Jitter: %f (ms)\n", std(sample, MAX_SAMPLE));
@@ -156,115 +154,6 @@ int main(int argc, char** argv)
     }
 }
 
-//int main(int argc, char** argv)
-//{
-//    int x;
-//    char manf[MAX_TEXT];
-//    const char test[MAX_TEXT] = "probando...";
-//    Componente componente;
-//    Lista list = Lista_Crear();
-
-//    printf("00 Hello World\n");
-//    scanf("%d", &x);
-//    clear();
-
-//    manf[32] = 13;
-
-////    char *buffer = 0;
-////    scanf("%ms", &buffer);
-////    printf("alloc len: %u\n", (unsigned) strlen(buffer));
-
-//    scanf("%32s", manf);
-//    printf("len: %u\n", (unsigned) strlen(manf));
-//    printf("manf[32]: %u\n", (unsigned) manf[32]);
-
-//    char c;
-//    scanf("%c", &c);
-//    int ret = scanf("%c", &c);
-//    printf("next: %u\n", (unsigned) c);
-//    printf("ret: %d\n", ret);
-
-//    componente.id = (unsigned int) x;
-//    componente.manufacturer = manf;
-
-//    clock_t start, end;
-
-////    start = clock();
-//    //Lista_Agregar(&list, &componente);
-//    time_t start_t, end_t;
-//    double slept;
-
-//    time(&start_t);
-//    do
-//    {
-//        time(&end_t);
-//    } while ((slept = difftime(end_t, start_t)) < 1);
-
-//    start_t = end_t;
-//    start = clock();
-//    do
-//    {
-//        end = clock();
-//        time(&end_t);
-//    } while ((slept = difftime(end_t, start_t)) < 5);
-
-//    double elapsed = ((double) (end - start)) / CLOCKS_PER_SEC;
-
-//    printf("Elapsed (clock): %g\n", elapsed*1e3); //milliseconds
-//    printf("Elapsed (time): %g\n", slept*1e3); //milliseconds
-
-////    double elapsed = difftime(end, start);
-////    printf("Elapsed time (ms): %g\n", elapsed*1e3);
-
-//    Lista_Agregar(&list, &componente);
-//    memcpy(manf, test, strlen(test)+1);
-//    Lista_Agregar(&list, &componente);
-
-//    if (list == NULL)
-//    {
-//        printf("NULL\n");
-//    }
-//    else
-//    {
-//        Componente * ptr;
-
-////        printf("%d\n", (*list->data)); //first
-////        printf("%d\n", (*(list->next->data))); //second
-
-////        printf("%s\n", list->data->manufacturer); //first
-////        printf("%s\n", list->next->data->manufacturer); //second
-
-//        ptr = Lista_Valor(&list, 0);
-//        if (ptr != NULL)
-//            printf("%s\n", ptr->manufacturer); //first
-
-//        ptr = Lista_Valor(&list, 1);
-//        if (ptr != NULL)
-//            printf("%s\n", ptr->manufacturer); //second
-
-////        ptr = Lista_Valor(&list, 2);
-////        if (ptr != NULL)
-////            printf("%s\n", ptr->manufacturer); //third
-////        else
-////            printf("NULL\n");
-
-////        Lista_Extraer(&list);
-////        Lista_Extraer(&list);
-//        Lista_Vaciar(&list);
-
-//        if (list == NULL)
-//            printf("Lista vacia...\n");
-
-////        ptr = Lista_Valor(&list, 0);
-////        if (ptr != NULL)
-////            printf("%s\n", ptr->manufacturer); //second
-////        else
-////            printf("NULL\n");
-//    }
-
-//    return 0;
-//}
-
 Lista Lista_Crear(void)
 {
     return (NULL); /* Devuelve un puntero no válido (lista vacia) */
@@ -274,38 +163,28 @@ void Lista_Agregar(Lista *lista, const Componente *elemento) /* agrega una COPIA
 {
     size_t len;
     Componente * componente; /* Variable auxiliar (componente eq. (*lista)->data) */
-    void * ptr;
 
     while (*lista != NULL)  /* Recore *lista */
         lista = &((*lista)->next);
 
-    ptr = malloc(sizeof(Nodo));
-    *lista = ptr;
-    printf("malloc: %p\n", ptr);
-//    *lista = malloc(sizeof(Nodo)); /* Añade un nuevo nodo al final */
+    *lista = malloc(sizeof(Nodo)); /* Añade un nuevo nodo al final */
 
     /* Copia *elemento en *componente */
-    ptr = malloc(sizeof(Componente));
-    componente = ptr;
-    printf("malloc: %p\n", ptr);
-//    componente = malloc(sizeof(Componente));
+    componente = malloc(sizeof(Componente));
     componente->id = elemento->id;
     componente->price = elemento->price;
     componente->n = elemento->n;
 
     /* Copia elemento->manufacturer a un nuevo buffer */
     len = strlen(elemento->manufacturer);
-    ptr = malloc(len + 1); /* strlen + '\0' */
-    componente->manufacturer = ptr;
-    printf("malloc: %p\n", ptr);
-//    componente->manufacturer = malloc(MAX_TEXT);
-    strcpy(componente->manufacturer, elemento->manufacturer); //Ref: strcpy man
+    componente->manufacturer = malloc(len + 1); /* strlen + '\0' */
+    strcpy(componente->manufacturer, elemento->manufacturer); //Ref: https://linux.die.net/man/3/strcpy
 
     (*lista)->data = componente; /* Asigna la dirección del nuevo componente */
     (*lista)->next = NULL; /* Indica el fin de lista */
 }
 
-Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde n es el número de elementos), devuelve NULL */
+Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde n es el número de elementos) o p < 0, devuelve NULL */
 {
     int i = 0;
     while ((*lista != NULL) && (i++ < pos)) /* Recore *lista hasta elemento i o fin de lista */
@@ -319,27 +198,14 @@ Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde 
 
 void Lista_Extraer(Lista *lista)
 {
-    void * ptr;
-
     if (*lista != NULL) /* Si la lista no está vacía... */
     {
-        while ((*lista)->next != NULL) /* Recore *lista hasta el Nodo anterior al último elemento */
+        while ((*lista)->next != NULL) /* Recore *lista hasta el último elemento (*lista apunta al último Nodo) */
             lista = &((*lista)->next);
 
-        ptr = (*lista)->data->manufacturer;
-        free(ptr);
-        printf("free: %p\n", ptr);
-//        free((*lista)->data->manufacturer);
-
-        ptr = (*lista)->data;
-        free(ptr);
-        printf("free: %p\n", ptr);
-//        free((*lista)->data);
-
-        ptr = *lista;
-        free(ptr);
-        printf("free: %p\n", ptr);
-//        free(*lista);
+        free((*lista)->data->manufacturer);
+        free((*lista)->data);
+        free(*lista);
 
         *lista = NULL; /* Nuevo fin de la lista */
     }
@@ -354,26 +220,15 @@ void Lista_Vaciar(Lista *lista)
     void * ptr;
 
     Lista next;
-    while (*lista != NULL)
+    while (*lista != NULL) /* Recore *lista */
     {
-        next = (*lista)->next;
+        next = (*lista)->next; /* Necesario para asegurar que no pertemos el puntero al siguiente Nodo */
 
-        ptr = (*lista)->data->manufacturer;
-        free(ptr);
-        printf("free: %p\n", ptr);
-//        free((*lista)->data->manufacturer);
+        free((*lista)->data->manufacturer);
+        free((*lista)->data);
+        free(*lista);
 
-        ptr = (*lista)->data;
-        free(ptr);
-        printf("free: %p\n", ptr);
-//        free((*lista)->data);
-
-        ptr = *lista;
-        free(ptr);
-        printf("free: %p\n", ptr);
-//        free(*lista);
-
-        *lista = next;
+        *lista = next; /* Siguiente Nodo */
     }
 }
 
