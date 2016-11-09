@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <math.h> /* Enlazar con libm.a (-lm; ref: http://stackoverflow.com/questions/10409032/why-am-i-getting-undefined-reference-to-sqrt-error-even-though-i-include-math) */
+#include <math.h> /* Enlazar con libm.a (gcc -o list list.o -lm; ref: http://stackoverflow.com/questions/10409032/why-am-i-getting-undefined-reference-to-sqrt-error-even-though-i-include-math) */
+
 
 #define TRUE 1
 #define FALSE 0
@@ -20,6 +21,10 @@
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x) /* Ref: http://stackoverflow.com/questions/240353/convert-a-preprocessor-token-to-a-string */
+
+#ifndef NAN
+    #define NAN 0./0. /* Ref: http://stackoverflow.com/questions/14174991/how-to-define-nan-value-in-ansi-c */
+#endif
 
 typedef struct component {
     unsigned int id; /* Código de componente (cinco dígitos) */
@@ -54,10 +59,9 @@ void clear(void); /* vacía el buffer stdin (final del buffer marcado por '\n') 
 
 void pause(void); /* muestra un mensaje pidiendo permiso antes de continuar (antes de system("clear")) */
 
-//TODO: handle malloc errors?
 int main(int argc, char** argv)
 {
-    int n;
+    unsigned int n;
     Componente *ptr;
     Componente componente;
     Lista list = Lista_Crear();
@@ -66,10 +70,10 @@ int main(int argc, char** argv)
     clock_t start, end;
 
     char buffer[MAX_TEXT];
-    componente.manufacturer = buffer;
 
-    int exit = FALSE;
-    int opt;
+    int opt, exit = FALSE;
+
+    componente.manufacturer = buffer;
 
     while (!exit)
     {
@@ -129,7 +133,7 @@ int main(int argc, char** argv)
         case 5:
             /* Crear nuevo componente (por defecto) */
             componente.id = 99999;
-            componente.manufacturer = "default";
+            strcpy(buffer, "default"); /* componente.manufacturer */
             componente.price = 0.f;
             componente.n = 0;
 
@@ -157,6 +161,8 @@ int main(int argc, char** argv)
 
         pause();
     }
+
+    return (0);
 }
 
 Lista Lista_Crear(void)
@@ -183,7 +189,7 @@ void Lista_Agregar(Lista *lista, const Componente *elemento) /* agrega una COPIA
     /* Copia elemento->manufacturer a un nuevo buffer */
     len = strlen(elemento->manufacturer);
     componente->manufacturer = malloc(len + 1); /* strlen + '\0' */
-    strcpy(componente->manufacturer, elemento->manufacturer); //Ref: https://linux.die.net/man/3/strcpy
+    strcpy(componente->manufacturer, elemento->manufacturer); /* Ref: https://linux.die.net/man/3/strcpy */
 
     (*lista)->data = componente; /* Asigna la dirección del nuevo componente */
     (*lista)->next = NULL; /* Indica el fin de lista */
@@ -191,7 +197,7 @@ void Lista_Agregar(Lista *lista, const Componente *elemento) /* agrega una COPIA
 
 Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde n es el número de elementos), devuelve NULL */
 {
-    int i = 0;
+    unsigned int i = 0;
     while ((*lista != NULL) && (i++ < pos)) /* Recore *lista hasta elemento i o fin de lista */
         lista = &((*lista)->next);
 
@@ -219,8 +225,8 @@ void Lista_Extraer(Lista *lista)
 void Lista_Vaciar(Lista *lista)
 {
     /* Lazy way... */
-//    while (*lista != NULL)
-//        Lista_Extraer(lista);
+/*    while (*lista != NULL)
+        Lista_Extraer(lista); */
 
     Lista next;
     while (*lista != NULL) /* Recore *lista */
