@@ -217,8 +217,6 @@ void Lista_Vaciar(Lista *lista)
 //    while (*lista != NULL)
 //        Lista_Extraer(lista);
 
-    void * ptr;
-
     Lista next;
     while (*lista != NULL) /* Recore *lista */
     {
