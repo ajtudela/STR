@@ -82,7 +82,7 @@ int main(int argc, char** argv)
             clear();
 
             printf("Fabricante: ");
-            scanf("%" TOSTRING(MAX_LEN) "s", buffer); /* MAX_TEXT - 1 caracteres (dinámico) */
+            scanf("%" TOSTRING(MAX_LEN) "s", buffer); /* MAX_TEXT - 1 caracteres */
             clear();
 
             printf("Precio: ");
@@ -189,7 +189,7 @@ void Lista_Agregar(Lista *lista, const Componente *elemento) /* agrega una COPIA
     (*lista)->next = NULL; /* Indica el fin de lista */
 }
 
-Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde n es el número de elementos) o p < 0, devuelve NULL */
+Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde n es el número de elementos), devuelve NULL */
 {
     int i = 0;
     while ((*lista != NULL) && (i++ < pos)) /* Recore *lista hasta elemento i o fin de lista */
