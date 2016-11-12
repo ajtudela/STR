@@ -1,6 +1,6 @@
 /*
  * Author: David Zúñiga Noël
- *
+ * Date: 12-11-2016
  */
 
 #include <stdio.h>
@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h> /* Enlazar con libm.a (gcc -o list list.o -lm; ref: http://stackoverflow.com/questions/10409032/why-am-i-getting-undefined-reference-to-sqrt-error-even-though-i-include-math) */
-
+#include <ctype.h>
 
 #define TRUE 1
 #define FALSE 0
@@ -55,6 +55,8 @@ double std(double *sample, unsigned int length); /* desviación típica */
 
 int show_menu(void); /* mostrar menú (User Interface) */
 
+char* skip_to_num(char * buffer);
+
 void clear(void); /* vacía el buffer stdin (final del buffer marcado por '\n') */
 
 void pause(void); /* muestra un mensaje pidiendo permiso antes de continuar (antes de system("clear")) */
@@ -70,19 +72,25 @@ int main(int argc, char** argv)
     clock_t start, end;
 
     char buffer[MAX_TEXT];
+    char input[MAX_TEXT];
 
-    int opt, exit = FALSE;
+    int exit = FALSE;
 
-    componente.manufacturer = buffer;
+    componente.manufacturer = buffer; /* fijo; cambia el contenido de buffer */
 
     while (!exit)
     {
-        opt = show_menu();
-        switch (opt)
+        switch (show_menu())
         {
         case 1:
+            /* Default */
+            componente.id = 0;
+            componente.price = 0.f;
+            componente.n = 0;
+
             printf("Código: ");
-            scanf("%" TOSTRING(MAX_DIGITS) "u", &componente.id); /* MAX_DIGITS dígitos */
+            scanf("%" TOSTRING(MAX_LEN) "s", input); /* MAX_TEXT - 1 caracteres */
+            sscanf(skip_to_num(input), "%" TOSTRING(MAX_DIGITS) "u", &componente.id);
             clear();
 
             printf("Fabricante: ");
@@ -90,11 +98,13 @@ int main(int argc, char** argv)
             clear();
 
             printf("Precio: ");
-            scanf("%f", &componente.price);
+            scanf("%" TOSTRING(MAX_LEN) "s", input); /* MAX_TEXT - 1 caracteres */
+            sscanf(skip_to_num(input), "%f", &componente.price);
             clear();
 
             printf("Disponibilidad: ");
-            scanf("%u", &componente.n);
+            scanf("%" TOSTRING(MAX_LEN) "s", input); /* MAX_TEXT - 1 caracteres */
+            sscanf(skip_to_num(input), "%u", &componente.n);
             clear();
 
             Lista_Agregar(&list, &componente);
@@ -132,7 +142,7 @@ int main(int argc, char** argv)
 
         case 5:
             /* Crear nuevo componente (por defecto) */
-            componente.id = 99999;
+            componente.id = 0;
             strcpy(buffer, "default"); /* componente.manufacturer */
             componente.price = 0.f;
             componente.n = 0;
@@ -279,12 +289,16 @@ int show_menu(void)
 
     system("clear");
 
-    printf("1. Añadir componente a la lista\n");
-    printf("2. Borrar componente de la lista\n");
-    printf("3. Imprimir en pantalla componente\n");
-    printf("4. Vaciar lista\n");
-    printf("5. Medir jitter\n");
-    printf("6. Salir\n");
+    printf("Gestión de Componentes Electrónicos\n");
+    printf("(c) 2016 Cluster B\n");
+    printf("\n");
+    printf("  1 - Añadir (al final)\n");
+    printf("  2 - Borrar (último)\n");
+    printf("  3 - Mostrar componente\n");
+    printf("  4 - Vaciar lista\n");
+    printf("  5 - Medir jitter\n");
+    printf("  6 - Salir\n");
+    printf("\n");
     printf("Opción: ");
 
     scanf("%d", &opt);
@@ -302,11 +316,19 @@ void clear(void)
     while ((ch != '\n') && (ch != EOF));
 }
 
+char* skip_to_num(char* buffer)
+{
+    while (((*buffer) != '\0') && (!isdigit(*buffer)))
+        buffer++;
+
+    return (buffer);
+}
+
 void pause(void)
 {
     int ch;
 
-    printf("Presione [ENTER] para continuar...");
+    printf("\nPresione [ENTER] para continuar...");
     ch = getchar();
     if ((ch != '\n') && (ch != EOF))
         clear();
