@@ -51,15 +51,15 @@ void Lista_Vaciar(Lista *lista);
 
 double mean(double *sample, unsigned int length); /* Media aritmética, llamada por la función std (desviación típica) */
 
-double std(double *sample, unsigned int length); /* desviación típica */
+double std(double *sample, unsigned int length); /* Desviación típica */
 
-int show_menu(void); /* mostrar menú (User Interface) */
+int show_menu(void); /* Mostrar menú (User Interface) */
 
 char* skip_to_num(char * buffer);
 
-void clear(void); /* vacía el buffer stdin (final del buffer marcado por '\n') */
+void clear(void); /* Vacía el buffer stdin (final del buffer marcado por '\n') */
 
-void pause(void); /* muestra un mensaje pidiendo permiso antes de continuar (antes de system("clear")) */
+void pause(void); /* Muestra un mensaje pidiendo permiso antes de continuar (antes de system("clear")) */
 
 int main(int argc, char** argv)
 {
@@ -76,7 +76,7 @@ int main(int argc, char** argv)
 
     int exit = FALSE;
 
-    componente.manufacturer = buffer; /* fijo; cambia el contenido de buffer */
+    componente.manufacturer = buffer; /* Fijo; cambia el contenido de buffer */
 
     while (!exit)
     {
@@ -180,12 +180,12 @@ Lista Lista_Crear(void)
     return (NULL); /* Devuelve un puntero no válido (lista vacia) */
 }
 
-void Lista_Agregar(Lista *lista, const Componente *elemento) /* agrega una COPIA de elemento al final de la lista */
+void Lista_Agregar(Lista *lista, const Componente *elemento) /* Agrega una COPIA de elemento al final de la lista */
 {
     size_t len;
     Componente * componente; /* Variable auxiliar (componente eq. (*lista)->data) */
 
-    while (*lista != NULL)  /* Recore *lista */
+    while (*lista != NULL)  /* Recorre *lista */
         lista = &((*lista)->next);
 
     *lista = malloc(sizeof(Nodo)); /* Añade un nuevo nodo al final */
@@ -208,7 +208,7 @@ void Lista_Agregar(Lista *lista, const Componente *elemento) /* agrega una COPIA
 Componente* Lista_Valor(const Lista *lista, unsigned pos) /* Si pos >= n (donde n es el número de elementos), devuelve NULL */
 {
     unsigned int i = 0;
-    while ((*lista != NULL) && (i++ < pos)) /* Recore *lista hasta elemento i o fin de lista */
+    while ((*lista != NULL) && (i++ < pos)) /* Recorre *lista hasta elemento i o fin de lista */
         lista = &((*lista)->next);
 
     if (*lista != NULL)
@@ -221,7 +221,7 @@ void Lista_Extraer(Lista *lista)
 {
     if (*lista != NULL) /* Si la lista no está vacía... */
     {
-        while ((*lista)->next != NULL) /* Recore *lista hasta el último elemento (*lista apunta al último Nodo) */
+        while ((*lista)->next != NULL) /* Recorre *lista hasta el último elemento (*lista apunta al último Nodo) */
             lista = &((*lista)->next);
 
         free((*lista)->data->manufacturer);
@@ -239,9 +239,9 @@ void Lista_Vaciar(Lista *lista)
         Lista_Extraer(lista); */
 
     Lista next;
-    while (*lista != NULL) /* Recore *lista */
+    while (*lista != NULL) /* Recorre *lista */
     {
-        next = (*lista)->next; /* Necesario para asegurar que no pertemos el puntero al siguiente Nodo */
+        next = (*lista)->next; /* Necesario para asegurar que no perdemos el puntero al siguiente Nodo */
 
         free((*lista)->data->manufacturer);
         free((*lista)->data);
